@@ -1,0 +1,8 @@
+# Common Russian words/abbreviations for fuzzy post-correction
+ул
+пр-т
+пр
+д
+г
+обл
+р-н

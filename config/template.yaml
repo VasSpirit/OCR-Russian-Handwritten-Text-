@@ -1,0 +1,50 @@
+# Template of the scanned form (fallback if automatic table detection fails)
+# Coordinates are in 300-DPI page pixels (0-based, left/top origin).
+# The real sample /workspace/Ckan_20260828.pdf is a single oversized page.
+page:
+  dpi: 300
+  width_px:  10334
+  height_px:  14600
+  rows:  27
+  columns:  9
+
+columns:
+  - name: row_no
+    x0:  0
+    x1:  36
+  - name: street
+    x0:  36
+    x1:  128
+  - name: house
+    x0:  744
+    x1:  868
+  - name: building
+    x0:  872
+    x1:  1008
+  - name: apartment
+    x0:  1012
+    x1:  1112
+  - name: gender_age
+    x0:  1116
+    x1:  1308
+  - name: contact_result
+    x0:  1312
+    x1:  1544
+  - name: comment
+    x0:  1544
+    x1:  2068
+  - name: check
+    x0:  2068
+    x1:  2372
+
+row_center_px:
+  - 336
+  - 446
+  - 556
+  - 666
+  - 778
+  - 888
+  - 998
+  - 1106
+  - 1216
+  - 1324

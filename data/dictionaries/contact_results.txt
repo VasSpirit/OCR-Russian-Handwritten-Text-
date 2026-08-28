@@ -1,0 +1,4 @@
+# Possible contact-result values
++
+0
+-

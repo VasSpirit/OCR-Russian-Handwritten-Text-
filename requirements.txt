@@ -4,8 +4,11 @@ numpy>=1.26
 Pillow>=10.0
 pandas>=2.0
 openpyxl>=3.1
+rapidfuzz>=3.6
 easyocr>=1.7
 # HTR engine (to be added later):
 # transformers>=4.40
 # torch>=2.2
 # rapidfuzz>=3.6
+shiftlab-ocr>=0.3.2
+pytest>=8.0

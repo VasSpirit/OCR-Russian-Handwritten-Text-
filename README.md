@@ -80,3 +80,22 @@ data/dictionaries/   vocab files for fuzzy correction(to be filled from the form
    gender, age, contact result, remark, confidence, needs review)
 7. Streamlit review UI(accept/edit/skip, corrections.csv - training data for fine-tuning
 
+
+## Production pipeline and GUI
+
+Production code is kept outside `experiments/`:
+
+```bash
+python scripts/process_pdf.py --input Скан_20260828.pdf --output output/result.xlsx
+python run_gui.py
+```
+
+The production pipeline writes visual geometry artifacts for review:
+
+- `output/debug/page_001_grid.png` — table border, column lines, row lines and labels.
+- `output/debug/page_001_cells.jpg` — contact sheet for the first rows/important columns.
+- `output/cells/page_001/row_001/*.png` — individual cell crops.
+
+Important geometry note: `experiments/data/cols.txt` stores detected table-line positions. The production extractor treats `36..128` as `row_no` and `128..744` as `street`; using `36..128` for `street` shifts row numbers into the street field and produces incorrect XLSX values.
+
+EasyOCR remains only a baseline/fallback. The HTR abstraction is in `src/handwriting_ocr.py`; `HTRRecognizer` is the production-facing recognizer facade and can be replaced with a stronger Russian handwriting backend without changing GUI/CLI code.

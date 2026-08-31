@@ -1,16 +1,19 @@
 """Production PDF OCR pipeline shared by GUI and CLI."""
 from __future__ import annotations
 
+import logging
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from threading import Event
-from typing import Callable
+from typing import Any, Callable
 
 import cv2
 import numpy as np
 import pymupdf
 
 from src.cell_extractor import CellExtractor
+from src.device import pin_memory_for, resolve_device
 from src.confidence import needs_review
 from src.contact_classifier import ContactClassifier
 from src.dictionary_corrector import DictionaryCorrector
@@ -22,6 +25,8 @@ from src.numeric_ocr import NumericOCR
 from src.table_detector import TableDetector
 
 ProgressCallback = Callable[[int, int, str], None]
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -51,13 +56,27 @@ class PipelineCancelled(RuntimeError):
 class Pipeline:
     """Reusable production pipeline: PDF -> cells -> field OCR/classifiers -> document."""
 
-    def __init__(self, output_dir: str | Path = "output", dpi: int = 300) -> None:
+    def __init__(self, output_dir: str | Path = "output", dpi: int = 300,
+                 device: str | None = None, config: dict[str, Any] | None = None) -> None:
+        self.config = config or {}
         self.output_dir = Path(output_dir)
         self.dpi = dpi
+        device_cfg = self.config.get("device", {}) or {}
+        self.device_mode = (device or device_cfg.get("default", "auto") or "auto").lower()
+        self.device = resolve_device(self.device_mode)
+        self.pin_memory = pin_memory_for(self.device)
+        cpu_cfg = device_cfg.get("cpu", {}) if isinstance(device_cfg.get("cpu"), dict) else {}
+        cpu_threads = str(cpu_cfg.get("threads", "auto") or "auto")
+        if cpu_threads.isdigit():
+            import os
+            os.environ.setdefault("OMP_NUM_THREADS", cpu_threads)
+            os.environ.setdefault("MKL_NUM_THREADS", cpu_threads)
+        logger.info("DEVICE_RESOLVED mode=%s device=%s pin_memory=%s",
+                  self.device_mode, self.device, self.pin_memory)
         self.table_detector = TableDetector(dpi=dpi)
         self.cell_extractor = CellExtractor(self.output_dir)
-        self.htr = HTRRecognizer()
-        self.numeric = NumericOCR()
+        self.htr = HTRRecognizer(device=self.device)
+        self.numeric = NumericOCR(device=self.device)
         self.contact = ContactClassifier()
         self.corrector = DictionaryCorrector()
 

@@ -17,12 +17,13 @@ class NumericOCR:
         "age": re.compile(r"^[0-9]{1,3}$"),
     }
 
-    def __init__(self) -> None:
+    def __init__(self, device: str = "cpu") -> None:
+        self.device = device
         self.recognizer = None
 
     def recognize(self, image: np.ndarray, field: str) -> RecognitionResult:
         if self.recognizer is None:
-            self.recognizer = EasyOCRRecognizer(allowlist="0123456789")
+            self.recognizer = EasyOCRRecognizer(allowlist="0123456789", gpu=(self.device == "cuda"))
         result = self.recognizer.recognize(image)
         text = re.sub(r"\D+", "", result.text)
         valid = bool(self.patterns.get(field, self.patterns["house"]).match(text))
